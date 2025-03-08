@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumoscale - Feedback</title>
+  <style>
+    :root {
+      --background: #ffffff;
+      --foreground: #0a0a0c;
+      --primary: #007BFF;
+      --primary-foreground: #fafafa;
+      --secondary: #f4f4f5;
+      --secondary-foreground: #1a1a1a;
+      --muted: #f4f4f5;
+      --muted-foreground: #75757e;
+      --border: #e5e5e7;
+      --radius: 0.75rem;
+      --amber-500: #f59e0b;
+      --destructive: #ef4444;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      line-height: 1.5;
+    }
+    
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      z-index: -1;
+      border-radius: 50%;
+      filter: blur(120px);
+    }
+    
+    body::before {
+      top: -10%;
+      right: -5%;
+      width: 80vw;
+      height: 80vw;
+      max-width: 800px;
+      max-height: 800px;
+      background-color: rgba(244, 244, 245, 0.3);
+      opacity: 0.7;
+    }
+    
+    body::after {
+      bottom: -10%;
+      left: -10%;
+      width: 80vw;
+      height: 80vw;
+      max-width: 900px;
+      max-height: 900px;
+      background-color: rgba(244, 244, 245, 0.2);
+      opacity: 0.6;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 90%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    
+    .back-button {
+      align-self: flex-start;
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: var(--foreground);
+      font-size: 0.9rem;
+      padding: 0.5rem;
+      margin-bottom: 1.5rem;
+      border-radius: var(--radius);
+      transition: background-color 0.2s;
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+    }
+    
+    .back-button:hover {
+      background-color: var(--secondary);
+    }
+    
+    .arrow-left {
+      width: 16px;
+      height: 16px;
+      margin-right: 0.5rem;
+      transition: transform 0.2s;
+    }
+    
+    .back-button:hover .arrow-left {
+      transform: translateX(-4px);
+    }
+    
+    .feedback-card {
+      width: 100%;
+      max-width: 550px;
+      margin: auto;
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    
+    .feedback-form {
+      width: 100%;
+    }
+    
+    .card-header {
+      padding: 1.5rem 1.5rem 1rem;
+    }
+    
+    .card-title {
+      font-size: 1.7rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+    
+    .card-description {
+      color: var(--muted-foreground);
+      font-size: 1rem;
+    }
+    
+    .separator {
+      height: 1px;
+      background-color: var(--border);
+      opacity: 0.5;
+      margin: 0 auto;
+      width: 90%;
+    }
+    
+    .card-content {
+      padding: 1.5rem;
+      padding-top: 1rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.8rem;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 0.7rem;
+    }
+    
+    .label-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .star-rating {
+      display: inline-flex;
+      gap: 0.25rem;
+      margin: 0.5rem 0;
+    }
+    
+    .star-rating button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(0, 0, 0, 0.2);
+      transition: color 0.2s, transform 0.2s;
+      padding: 0.25rem;
+      line-height: 0;
+    }
+    
+    .star-rating button:hover,
+    .star-rating button:focus {
+      transform: scale(1.1);
+      outline: none;
+    }
+    
+    .star-rating button.active {
+      color: var(--amber-500);
+    }
+    
+    .star-rating button.active svg {
+      fill: currentColor;
+    }
+    
+    .character-counter {
+      display: flex;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--muted-foreground);
+    }
+    
+    .counter-bar {
+      margin-left: 0.5rem;
+      height: 4px;
+      width: 3rem;
+      background-color: var(--secondary);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    
+    .counter-progress {
+      height: 100%;
+      background-color: var(--primary);
+      opacity: 0.7;
+      width: 0%;
+      transition: width 0.3s ease-out;
+    }
+    
+    .warning .counter-progress {
+      background-color: var(--amber-500);
+    }
+    
+    .error .counter-progress {
+      background-color: var(--destructive);
+    }
+    
+    .warning #counter {
+      color: var(--amber-500);
+    }
+    
+    .error #counter {
+      color: var(--destructive);
+      font-weight: 500;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background-color: var(--background);
+      font-size: 1rem;
+      font-family: inherit;
+      resize: none;
+      transition: border-color 0.2s;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+    
+    textarea::placeholder {
+      color: var(--muted-foreground);
+    }
+    
+    .card-footer {
+      padding: 0 1.5rem 1.5rem;
+      display: flex;
+      justify-content: flex-end;
+    }
+    
+    .submit-button {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .submit-button:hover {
+      background-color: #0056b3;
+    }
+    
+    .submit-button::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(105%);
+      transition: transform 0.3s ease-out;
+    }
+    
+    .submit-button:hover::after {
+      transform: translateY(0);
+    }
+    
+    .reset-button {
+      background-color: transparent;
+      color: var(--foreground);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.7rem 1.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .reset-button:hover {
+      background-color: var(--secondary);
+    }
+    
+    .success-message {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .check-icon {
+      background-color: var(--secondary);
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      animation: pulse 2s infinite;
+    }
+    
+    .check-icon svg {
+      color: var(--primary);
+    }
+    
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+    
+    .success-message h2 {
+      font-size: 1.7rem;
+      margin-bottom: 0.7rem;
+    }
+    
+    .success-message p {
+      color: var(--muted-foreground);
+      margin-bottom: 1.8rem;
+    }
+    
+    .footer-text {
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: var(--muted-foreground);
+      opacity: 0.7;
+      position: absolute;
+      bottom: 1rem;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .container {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+    
+    .back-button,
+    .card-title,
+    .card-description,
+    .form-group,
+    .card-footer {
+      animation: slideUp 0.5s ease-out forwards;
+    }
+    
+    .card-description {
+      animation-delay: 0.1s;
+    }
+    
+    .form-group:nth-child(1) {
+      animation-delay: 0.15s;
+    }
+    
+    .form-group:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .card-footer {
+      animation-delay: 0.25s;
+    }
+    
+    .footer-text {
+      animation-delay: 0.3s;
+      animation: fadeIn 0.8s ease-out 0.3s forwards;
+      opacity: 0;
+    }
+    
+    @media (max-width: 600px) {
+      .container {
+        padding: 1rem 0.5rem;
+      }
+      
+      .back-button {
+        top: 0.5rem;
+        left: 0.5rem;
+      }
+      
+      .card-header,
+      .card-content,
+      .card-footer {
+        padding: 1rem;
+      }
+      
+      .card-title {
+        font-size: 1.4rem;
+      }
+      
+      .star-rating button svg {
+        width: 28px;
+        height: 28px;
+      }
+      
+      .feedback-card {
+        max-height: 85vh;
+        overflow-y: auto;
+      }
+    }
+    
+    .submit-button.loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
+    
+    .loading-spinner {
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      animation: spin 0.75s linear infinite;
+    }
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-button">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow-left"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>
+      Back to Home
+    </a>
+
+    <div id="feedback-card" class="feedback-card">
+      <div id="feedback-form" class="feedback-form">
+        <div class="card-header">
+          <h1 class="card-title">We Value Your Feedback</h1>
+          <p class="card-description">Help us improve your experience by sharing your thoughts.</p>
+        </div>
+        <div class="separator"></div>
+        <div class="card-content">
+          <div class="form-group">
+            <label for="rating">How would you rate your experience?</label>
+            <div class="star-rating" id="star-rating">
+              <button type="button" data-value="1" aria-label="Rate 1 star out of 5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              </button>
+              <button type="button" data-value="2" aria-label="Rate 2 stars out of 5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              </button>
+              <button type="button" data-value="3" aria-label="Rate 3 stars out of 5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              </button>
+              <button type="button" data-value="4" aria-label="Rate 4 stars out of 5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              </button>
+              <button type="button" data-value="5" aria-label="Rate 5 stars out of 5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              </button>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="label-container">
+              <label for="feedback-text">Share your thoughts (optional)</label>
+              <div class="character-counter">
+                <span id="counter">0</span>/<span>500</span>
+                <div class="counter-bar">
+                  <div id="counter-progress" class="counter-progress"></div>
+                </div>
+              </div>
+            </div>
+            <textarea id="feedback-text" placeholder="Tell us what you think..." maxlength="500"></textarea>
+          </div>
+        </div>
+        
+        <div class="card-footer">
+          <button id="submit-button" class="submit-button">Submit Feedback</button>
+        </div>
+      </div>
+
+      <div id="success-message" class="success-message hidden">
+        <div class="check-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <h2>Thank You!</h2>
+        <p>Your feedback has been submitted successfully. We appreciate your input!</p>
+        <button id="reset-button" class="reset-button">Submit Another Response</button>
+      </div>
+    </div>
+
+    <div class="footer-text">Lumoscale © 2023 - All rights reserved</div>
+  </div>
+
+  <script>
+    const starRating = document.getElementById('star-rating');
+    const stars = starRating.querySelectorAll('button');
+    let rating = 0;
+
+    stars.forEach(star => {
+      star.addEventListener('click', function() {
+        const value = parseInt(this.getAttribute('data-value'));
+        rating = value;
+        updateStars(value);
+      });
+    });
+
+    function updateStars(value) {
+      stars.forEach(star => {
+        const starValue = parseInt(star.getAttribute('data-value'));
+        if (starValue <= value) {
+          star.classList.add('active');
+          star.querySelector('svg').setAttribute('fill', 'currentColor');
+        } else {
+          star.classList.remove('active');
+          star.querySelector('svg').setAttribute('fill', 'none');
+        }
+      });
+    }
+
+    const feedbackText = document.getElementById('feedback-text');
+    const counter = document.getElementById('counter');
+    const counterProgress = document.getElementById('counter-progress');
+    const counterContainer = counter.parentElement;
+    const MAX_LENGTH = 500;
+
+    feedbackText.addEventListener('input', function() {
+      const length = this.value.length;
+      counter.textContent = length;
+      const percentage = (length / MAX_LENGTH) * 100;
+      counterProgress.style.width = `${percentage}%`;
+      
+      if (length >= MAX_LENGTH) {
+        counterContainer.classList.add('error');
+        counterContainer.classList.remove('warning');
+      } else if (length >= MAX_LENGTH * 0.8) {
+        counterContainer.classList.add('warning');
+        counterContainer.classList.remove('error');
+      } else {
+        counterContainer.classList.remove('warning', 'error');
+      }
+    });
+
+    const submitButton = document.getElementById('submit-button');
+    const feedbackForm = document.getElementById('feedback-form');
+    const successMessage = document.getElementById('success-message');
+    const resetButton = document.getElementById('reset-button');
+
+    submitButton.addEventListener('click', function() {
+      if (rating === 0) {
+        alert('Please provide a rating before submitting your feedback.');
+        return;
+      }
+
+      submitButton.classList.add('loading');
+      submitButton.innerHTML = '<span class="loading-spinner"></span>Submitting...';
+      submitButton.disabled = true;
+      
+      setTimeout(function() {
+        console.log({
+          rating: rating,
+          feedback: feedbackText.value,
+          timestamp: new Date().toISOString()
+        });
+        
+        feedbackForm.style.display = 'none';
+        successMessage.classList.remove('hidden');
+        
+        submitButton.classList.remove('loading');
+        submitButton.innerHTML = 'Submit Feedback';
+        submitButton.disabled = false;
+      }, 1500);
+    });
+
+    resetButton.addEventListener('click', function() {
+      updateStars(0);
+      rating = 0;
+      feedbackText.value = '';
+      counter.textContent = '0';
+      counterProgress.style.width = '0%';
+      counterContainer.classList.remove('warning', 'error');
+      
+      successMessage.classList.add('hidden');
+      feedbackForm.style.display = 'block';
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.body.style.opacity = '0';
+      setTimeout(function() {
+        document.body.style.opacity = '1';
+        document.body.style.transition = 'opacity 800ms ease-out';
+      }, 50);
+    });
+  </script>
+</body>
+</html>
